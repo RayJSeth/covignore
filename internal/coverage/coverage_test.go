@@ -2,6 +2,8 @@ package coverage
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -194,5 +196,68 @@ func TestStatsZeroStatements(t *testing.T) {
 	stats := Stats{}
 	if stats.Percent() != 0 {
 		t.Errorf("expected 0%% for zero statements, got %f", stats.Percent())
+	}
+}
+
+func TestStatsString(t *testing.T) {
+	s := Stats{Statements: 10, Covered: 8}
+	got := s.String()
+	if got != "80.0%" {
+		t.Errorf("String() = %q, want 80.0%%", got)
+	}
+}
+
+func TestWriteFile(t *testing.T) {
+	profile := &Profile{
+		Mode: "set",
+		Entries: []Entry{
+			{Raw: "github.com/x/a.go:1.1,5.2 2 1"},
+		},
+	}
+	path := filepath.Join(t.TempDir(), "out.cov")
+	if err := WriteFile(path, profile); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := os.ReadFile(path)
+	if !strings.Contains(string(data), "mode: set") {
+		t.Error("file missing mode line")
+	}
+	if !strings.Contains(string(data), "github.com/x/a.go") {
+		t.Error("file missing entry")
+	}
+}
+
+func TestParseFilePathNoColon(t *testing.T) {
+	got := parseFilePath("nocolon 2 1")
+	if got != "nocolon" {
+		t.Errorf("parseFilePath = %q, want nocolon", got)
+	}
+}
+
+func TestParseStmtCountShortLine(t *testing.T) {
+	stmt, count := parseStmtCount("short")
+	if stmt != 0 || count != 0 {
+		t.Errorf("got %d, %d, want 0, 0", stmt, count)
+	}
+}
+
+func TestShouldIgnoreEntryEmptyPrefix(t *testing.T) {
+	e := Entry{File: "mock/a.go"}
+	modules := []ModuleMatcher{
+		{ModulePrefix: "", Matcher: ignore.NewMatcher([]ignore.Pattern{{Glob: "mock/**"}})},
+	}
+	if !shouldIgnoreEntry(e, modules) {
+		t.Error("should match when module prefix is empty and glob matches")
+	}
+}
+
+func TestParseSkipsBlankLines(t *testing.T) {
+	input := "mode: atomic\n\ngithub.com/x/a.go:1.1,5.2 2 1\n\n"
+	p, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Entries) != 1 {
+		t.Errorf("got %d entries, want 1", len(p.Entries))
 	}
 }
