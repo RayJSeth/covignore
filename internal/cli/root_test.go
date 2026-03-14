@@ -276,6 +276,76 @@ func TestApplyFilterNoMatch(t *testing.T) {
 	}
 }
 
+func TestApplyFilterSummaryAlwaysPrinted(t *testing.T) {
+	profile := &coverage.Profile{
+		Mode: "set",
+		Entries: []coverage.Entry{
+			{Raw: "github.com/x/mock/a.go:1.1,5.2 2 1", File: "github.com/x/mock/a.go"},
+			{Raw: "github.com/x/handler.go:1.1,5.2 2 1", File: "github.com/x/handler.go"},
+		},
+	}
+
+	matcher := ignore.NewMatcher([]ignore.Pattern{{Glob: "**/mock/**"}})
+	matchers := []coverage.ModuleMatcher{{ModulePrefix: "github.com/x", Matcher: matcher}}
+
+	var stderr bytes.Buffer
+	a := &app{stdout: io.Discard, stderr: &stderr}
+	a.applyFilter(profile, matchers, false)
+
+	output := stderr.String()
+	if !strings.Contains(output, "covignore: filtered") {
+		t.Errorf("expected summary line on stderr, got: %q", output)
+	}
+	if strings.Contains(output, "filtered: github.com") {
+		t.Error("per-file details should not appear without --verbose")
+	}
+}
+
+func TestApplyFilterVerboseShowsDetails(t *testing.T) {
+	profile := &coverage.Profile{
+		Mode: "set",
+		Entries: []coverage.Entry{
+			{Raw: "github.com/x/mock/a.go:1.1,5.2 2 1", File: "github.com/x/mock/a.go"},
+			{Raw: "github.com/x/handler.go:1.1,5.2 2 1", File: "github.com/x/handler.go"},
+		},
+	}
+
+	matcher := ignore.NewMatcher([]ignore.Pattern{{Glob: "**/mock/**"}})
+	matchers := []coverage.ModuleMatcher{{ModulePrefix: "github.com/x", Matcher: matcher}}
+
+	var stderr bytes.Buffer
+	a := &app{stdout: io.Discard, stderr: &stderr}
+	a.applyFilter(profile, matchers, true)
+
+	output := stderr.String()
+	if !strings.Contains(output, "filtered: github.com/x/mock/a.go") {
+		t.Errorf("expected per-file detail with --verbose, got: %q", output)
+	}
+	if !strings.Contains(output, "covignore: filtered") {
+		t.Errorf("expected summary line with --verbose, got: %q", output)
+	}
+}
+
+func TestApplyFilterNoMatchSilentWithoutVerbose(t *testing.T) {
+	profile := &coverage.Profile{
+		Mode: "set",
+		Entries: []coverage.Entry{
+			{Raw: "github.com/x/handler.go:1.1,5.2 2 1", File: "github.com/x/handler.go"},
+		},
+	}
+
+	matcher := ignore.NewMatcher([]ignore.Pattern{{Glob: "**/mock/**"}})
+	matchers := []coverage.ModuleMatcher{{ModulePrefix: "github.com/x", Matcher: matcher}}
+
+	var stderr bytes.Buffer
+	a := &app{stdout: io.Discard, stderr: &stderr}
+	a.applyFilter(profile, matchers, false)
+
+	if stderr.Len() != 0 {
+		t.Errorf("expected no output without --verbose when nothing filtered, got: %q", stderr.String())
+	}
+}
+
 func TestWriteOutputStdout(t *testing.T) {
 	profile := &coverage.Profile{Mode: "set"}
 

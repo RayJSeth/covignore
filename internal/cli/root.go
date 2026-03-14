@@ -477,15 +477,16 @@ func (a *app) applyFilter(profile *coverage.Profile, matchers []coverage.ModuleM
 	filteredCount := len(profile.Entries) - len(filtered.Entries)
 
 	if verbose {
-		if len(filteredFiles) > 0 {
-			for _, f := range filteredFiles {
-				fmt.Fprintf(a.stderr, "  filtered: %s\n", f)
-			}
-			fmt.Fprintf(a.stderr, "covignore: filtered %d entries (%d files) of %d total\n",
-				filteredCount, len(filteredFiles), len(profile.Entries))
-		} else {
-			fmt.Fprintf(a.stderr, "covignore: no entries filtered\n")
+		for _, f := range filteredFiles {
+			fmt.Fprintf(a.stderr, "  filtered: %s\n", f)
 		}
+	}
+
+	if len(filteredFiles) > 0 {
+		fmt.Fprintf(a.stderr, "covignore: filtered %d entries (%d files) of %d total\n",
+			filteredCount, len(filteredFiles), len(profile.Entries))
+	} else if verbose {
+		fmt.Fprintf(a.stderr, "covignore: no entries filtered\n")
 	}
 
 	return &filterOutcome{
