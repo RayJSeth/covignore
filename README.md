@@ -1,6 +1,6 @@
 # covignore
 
-Standardized coverage ignoring for Go projects via `.covignore` glob patterns. Zero dependencies.
+Standardized coverage ignoring for Go projects via `.covignore` glob patterns.
 
 ## Why covignore?
 
