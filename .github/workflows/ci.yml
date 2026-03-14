@@ -15,26 +15,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: stable
-      - run: go vet ./...
-      - name: Check formatting
-        run: |
-          unformatted=$(gofmt -l .)
-          if [ -n "$unformatted" ]; then
-            echo "Files not formatted:"
-            echo "$unformatted"
-            exit 1
-          fi
-      - name: Check go fix
-        run: |
-          OUTPUT=$(go fix -diff ./... 2>&1)
-          if [ -n "$OUTPUT" ]; then
-            echo "::error::go fix found modernization opportunities"
-            echo ""
-            echo "$OUTPUT"
-            echo ""
-            echo "Run 'go fix ./...' locally and commit the changes."
-            exit 1
-          fi
+      - run: make lint
 
   build:
     needs: lint
@@ -44,7 +25,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: stable
-      - run: go build -o /dev/null ./cmd/covignore
+      - run: make ci-build
 
   test:
     needs: build
@@ -58,4 +39,4 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
-      - run: go test -race ./...
+      - run: make test-race
