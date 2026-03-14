@@ -1,5 +1,12 @@
 # covignore
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/RayJSeth/covignore.svg)](https://pkg.go.dev/github.com/RayJSeth/covignore)
+[![CI](https://github.com/RayJSeth/covignore/actions/workflows/ci.yml/badge.svg)](https://github.com/RayJSeth/covignore/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/RayJSeth/92ff8e5fa6fa789ef6b04b2d640984fd/raw/covignore-coverage.json)](https://github.com/RayJSeth/covignore/actions/workflows/coverage.yml)
+[![Release](https://img.shields.io/github/v/release/RayJSeth/covignore)](https://github.com/RayJSeth/covignore/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/RayJSeth/covignore)](https://goreportcard.com/report/github.com/RayJSeth/covignore)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Standardized coverage ignoring for Go projects via `.covignore` glob patterns.
 
 ## Why covignore?

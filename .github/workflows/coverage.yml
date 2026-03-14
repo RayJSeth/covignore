@@ -1,0 +1,36 @@
+name: Coverage
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: Generate coverage
+        run: make ci-cover
+      - name: Extract coverage percentage
+        id: cov
+        run: |
+          PCT=$(go tool cover -func=coverage/coverage.out | grep ^total | awk '{print $3}' | tr -d '%')
+          echo "percent=$PCT" >> "$GITHUB_OUTPUT"
+          echo "### Coverage: ${PCT}%" >> "$GITHUB_STEP_SUMMARY"
+      - name: Update coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 92ff8e5fa6fa789ef6b04b2d640984fd
+          filename: covignore-coverage.json
+          label: coverage
+          message: ${{ steps.cov.outputs.percent }}%
+          valColorRange: ${{ steps.cov.outputs.percent }}
+          minColorRange: 40
+          maxColorRange: 85
