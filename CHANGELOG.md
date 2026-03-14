@@ -4,6 +4,16 @@ All notable changes to covignore are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-03-14
+QoL fix after dogfooding on another project.
+
+### Changed
+
+- Filter summary line now always prints to stderr when entries are filtered (e.g. `covignore: filtered 2 entries (1 files) of 5 total`). Previously this only showed with `--verbose`. The per-file detail lines still require `--verbose`.
+- Windows added to CI test matrix.
+- Goreleaser config updated to use `formats` instead of deprecated `format`.
+- Added `go fix -diff` check to CI lint job.
+
 ## [1.0.0] - 2026-03-14
 Transition off private hosting and start over on GH now that this has scaled enough.
 

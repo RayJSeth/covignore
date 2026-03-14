@@ -142,7 +142,7 @@ Lists all `.go` files in the module matched by the current `.covignore` patterns
 
 ```sh
 covignore --dry-run -- ./...   # Preview filtering without writing
-covignore --verbose -- ./...   # Show which files are filtered
+covignore --verbose -- ./...   # Show per-file filter details
 covignore --version            # Print version
 covignore --init               # Create default .covignore
 ```
@@ -159,7 +159,7 @@ covignore --init               # Create default .covignore
 | `--preset=NAME` | Use a built-in ignore preset |
 | `-o PATH` | Output file path (default: `coverage.out`; use `-` for stdout) |
 | `--dry-run` | Preview filtering without writing files |
-| `--verbose` | Show which entries are filtered |
+| `--verbose` | Show per-file filter details (summary always prints when entries are filtered) |
 | `--check` | List files matched by current patterns |
 | `--version` | Print version |
 
