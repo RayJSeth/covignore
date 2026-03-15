@@ -1,6 +1,4 @@
 BINARY := bin/covignore
-VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-LDFLAGS := -ldflags="-X github.com/RayJSeth/covignore/internal/cli.Version=$(VERSION)"
 COVERAGE_DIR := coverage
 
 .PHONY: all
@@ -9,11 +7,11 @@ all: build
 .PHONY: build
 build:
 	@mkdir -p $(dir $(BINARY))
-	go build $(LDFLAGS) -o $(BINARY) ./cmd/covignore
+	go build -o $(BINARY) ./cmd/covignore
 
 .PHONY: install
 install:
-	go install $(LDFLAGS) ./cmd/covignore
+	go install ./cmd/covignore
 
 .PHONY: test
 test:
