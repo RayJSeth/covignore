@@ -517,23 +517,23 @@ func (a *app) finalize(result *filterOutcome, flags *Flags, outputPath string) i
 	stats := coverage.ComputeStats(result.Profile)
 
 	if flags.JSON {
-		return a.writeJSON(stats, result)
-	}
-
-	if flags.Summary || flags.Min > 0 {
-		fmt.Fprintf(a.stdout, "coverage: %s\n", stats)
-	}
-
-	if flags.HTML != "" && !flags.DryRun {
-		if outputPath == "-" {
-			a.errorf("--html requires file output (use -o PATH)")
-			return 1
+		a.writeJSON(stats, result)
+	} else {
+		if flags.Summary || flags.Min > 0 {
+			fmt.Fprintf(a.stdout, "coverage: %s\n", stats)
 		}
-		cmd := exec.Command("go", "tool", "cover", "-html="+outputPath, "-o", flags.HTML)
-		cmd.Stderr = a.stderr
-		if err := cmd.Run(); err != nil {
-			a.errorf("generating HTML: %v", err)
-			return 1
+
+		if flags.HTML != "" && !flags.DryRun {
+			if outputPath == "-" {
+				a.errorf("--html requires file output (use -o PATH)")
+				return 1
+			}
+			cmd := exec.Command("go", "tool", "cover", "-html="+outputPath, "-o", flags.HTML)
+			cmd.Stderr = a.stderr
+			if err := cmd.Run(); err != nil {
+				a.errorf("generating HTML: %v", err)
+				return 1
+			}
 		}
 	}
 
@@ -547,7 +547,7 @@ func (a *app) finalize(result *filterOutcome, flags *Flags, outputPath string) i
 	return 0
 }
 
-func (a *app) writeJSON(stats coverage.Stats, result *filterOutcome) int {
+func (a *app) writeJSON(stats coverage.Stats, result *filterOutcome) {
 	files := stats.Files
 	if files == nil {
 		files = []string{}
@@ -577,5 +577,4 @@ func (a *app) writeJSON(stats coverage.Stats, result *filterOutcome) int {
 	enc := json.NewEncoder(a.stdout)
 	enc.SetIndent("", "  ")
 	enc.Encode(out)
-	return 0
 }

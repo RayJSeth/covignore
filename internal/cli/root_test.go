@@ -622,6 +622,51 @@ func TestRunWithMinFail(t *testing.T) {
 	}
 }
 
+func TestRunWithJSONAndMinFail(t *testing.T) {
+	dir := t.TempDir()
+	covPath := filepath.Join(dir, "coverage.out")
+	// 10 statements, 0 hits = 0% coverage
+	covData := "mode: set\ngithub.com/x/proj/a.go:1.1,5.2 10 0\n"
+	os.WriteFile(covPath, []byte(covData), 0644)
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module github.com/x/proj\n\ngo 1.22\n"), 0644)
+	os.WriteFile(filepath.Join(dir, ".covignore"), []byte(""), 0644)
+	t.Chdir(dir)
+
+	var stdout, stderr bytes.Buffer
+	code := RunWith([]string{"--json", "--min=80", covPath}, &stdout, &stderr, nil)
+	if code != 1 {
+		t.Fatalf("expected fail (exit 1) with --json --min, got %d", code)
+	}
+	if !strings.Contains(stderr.String(), "FAIL") {
+		t.Error("expected FAIL in stderr")
+	}
+	// JSON output should still be produced
+	var result map[string]any
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		t.Fatalf("expected valid JSON output even on threshold failure: %v\n%s", err, stdout.String())
+	}
+}
+
+func TestRunWithJSONAndMinPass(t *testing.T) {
+	dir := t.TempDir()
+	covPath := filepath.Join(dir, "coverage.out")
+	covData := "mode: set\ngithub.com/x/proj/a.go:1.1,5.2 10 10\n"
+	os.WriteFile(covPath, []byte(covData), 0644)
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module github.com/x/proj\n\ngo 1.22\n"), 0644)
+	os.WriteFile(filepath.Join(dir, ".covignore"), []byte(""), 0644)
+	t.Chdir(dir)
+
+	var stdout, stderr bytes.Buffer
+	code := RunWith([]string{"--json", "--min=80", covPath}, &stdout, &stderr, nil)
+	if code != 0 {
+		t.Fatalf("expected pass (exit 0), got %d, stderr = %s", code, stderr.String())
+	}
+	var result map[string]any
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		t.Fatalf("invalid JSON output: %v\n%s", err, stdout.String())
+	}
+}
+
 func TestRunWithDryRun(t *testing.T) {
 	dir := t.TempDir()
 	covPath := filepath.Join(dir, "coverage.out")
